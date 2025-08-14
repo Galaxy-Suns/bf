@@ -9,23 +9,6 @@
 const int MEM_SIZE = 30000;
 const int MATCH_BUFFER_SIZE = 1000;
 
-void loop_match(std::string bf_code, int *match_buf) {
-    std::vector<int> stack;
-    int push_order = 0;
-    for (int i = 0; i < bf_code.size(); i++) {
-        char c = bf_code[i];
-        if (c == '[') {
-            stack.push_back(push_order);
-            push_order++;
-        }
-        else if(c == ']') {
-            int top = stack.back();
-            stack.pop_back();
-            match_buf[top] = i;
-        }
-    }
-}
-
 std::string remove_comment(std::string origin) {
     std::istringstream iss{origin};
     std::ostringstream oss;
@@ -33,7 +16,7 @@ std::string remove_comment(std::string origin) {
     while(std::getline(iss, line)) {
         for (int i = 0; i < line.size(); i++) {
             if (line[i] == '/') break;
-            oss << line[i];
+            if (std::string{".,+-<>[]"}.find(line[i]) != std::string::npos) oss << line[i];
         }
     }
     return oss.str();
@@ -44,16 +27,16 @@ void bf_handler(
     bool output_number, 
     bool input_number, 
     int visual,
-    bool enter
+    bool enter,
+    int max_step
 ) {
     std::string bf_code = remove_comment(bf_code_origin);
     uint8_t mem[MEM_SIZE]{0};
     int index = 0;
     int left_order = 0;
-    int match_buf[MATCH_BUFFER_SIZE];
     std::vector<int> left;
-    loop_match(bf_code, match_buf);
-    for(int i = 0; i < bf_code.size(); i++) {
+    for(int i = 0; i < bf_code.size() && max_step != 0; i++, max_step--) {
+        int vi = i;
         char c = bf_code[i];
         switch (c) {
         case '+':
@@ -87,12 +70,22 @@ void bf_handler(
             break;
         case '[':
             left.push_back(i);
-            if (mem[index] == 0) i = match_buf[left_order] - 1;// jmp to ]
-            left_order++;
+            if (mem[index] == 0) {
+                std::vector<int> stack;
+                for (int ti = i + 1; ti < bf_code.size(); ti++) {
+                    if (bf_code[ti] == '[') stack.push_back(ti);
+                    else if(bf_code[ti] == ']') {
+                        if (stack.empty()) {
+                            i = ti - 1;
+                            break;
+                        }
+                        else stack.pop_back();
+                    }
+                }
+            }
             break;
         case ']':
             if (mem[index] != 0) {
-                left_order--;
                 i = left.back() - 1;
             }
             left.pop_back();
@@ -100,7 +93,12 @@ void bf_handler(
         default: continue;
         }
         if (visual) {
-            std::cout << c << "\t\t";
+            for (int j = 0; j < bf_code.size(); j++) {
+                if (vi == j) std::cout << termcolor::green;
+                std::cout << bf_code[j];
+                if (vi == j) std::cout << termcolor::reset;
+            }
+            std::cout << std::endl;
             for (int i = 0; i < visual; i++) {
                 if (index == i) std::cout << termcolor::green;
                 std::cout << (int) mem[i] << '\t';

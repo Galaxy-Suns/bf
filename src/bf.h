@@ -6,5 +6,6 @@ void bf_handler(
     bool output_number, 
     bool input_number, 
     int visual,
-    bool enter
+    bool enter,
+    int max_step
 );
