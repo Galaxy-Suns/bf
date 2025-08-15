@@ -181,6 +181,7 @@ std::string replace_command(const std::string &code_ncomment_nspace) {
         find_start = cmd_end + 1;
         cmd_start = code_ncomment_nspace.find('!', find_start);
     }
+    code_ncmt_nsp_ncmd << code_ncomment_nspace.substr(find_start, cmd_start + 1 - find_start);
     return code_ncmt_nsp_ncmd.str();
 }
 
