@@ -5,11 +5,12 @@
 #include <string>
 #include <cstdint>
 #include <termcolor/termcolor.hpp>
+#include <cctype>
 
 const int MEM_SIZE = 30000;
 const int MATCH_BUFFER_SIZE = 1000;
 
-std::string remove_comment(std::string origin) {
+std::string remove_comment(const std::string &origin) {
     std::istringstream iss{origin};
     std::ostringstream oss;
     std::string line;
@@ -105,6 +106,19 @@ void bf_handler(
                 if (index == i) std::cout << termcolor::reset;
             }
             std::cout << std::endl;
+            std::cout << termcolor::blue;
+            std::ostringstream oss;
+            bool printFlag = false;
+            for (int i = 0; i < visual; i++) {
+                char c = (char) mem[i];
+                if(std::isprint(c)) {
+                    oss<< (char) mem[i] << '\t';
+                    printFlag = true;
+                }
+                else oss << ' ' << '\t';
+            }
+            if (printFlag) std::cout << oss.str() << std::endl;
+            std::cout << termcolor::reset;
             std::cout << "----" << std::endl;
         }
         
