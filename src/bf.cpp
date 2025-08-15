@@ -1,16 +1,20 @@
 #include "bf.h"
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <cstdint>
 #include <termcolor/termcolor.hpp>
 #include <cctype>
+#include <filesystem>
 
 const int MEM_SIZE = 30000;
 const int MATCH_BUFFER_SIZE = 1000;
 
 std::string valid_code(const std::string &origin); 
+std::string replace_command(const std::string &code_ncomment_nspace); 
+std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body); 
 void output(uint8_t c, bool output_number, bool enter); 
 uint8_t input(bool input_number); 
 int loop_left(std::vector<int> &left, uint8_t c, int i, const std::string &bf_code); 
@@ -144,13 +148,50 @@ void visualize(const std::string &bf_code, uint8_t *mem, int visual, int vi, int
 
 std::string valid_code(const std::string &origin) {
     std::istringstream iss{origin};
-    std::ostringstream oss;
+    std::ostringstream code_ncomment_nspace, valid_code;
     std::string line;
     while(std::getline(iss, line)) {
         for (int i = 0; i < line.size(); i++) {
-            if (line[i] == '/') break;
-            if (std::string{".,+-<>[]"}.find(line[i]) != std::string::npos) oss << line[i];
+            if (line[i] == '#') break;
+            if (!std::isspace(line[i])) code_ncomment_nspace << line[i];
         }
     }
-    return oss.str();
+    std::string code_ncmt_nsp_ncmd = replace_command(code_ncomment_nspace.str());
+    for (int i = 0; i < code_ncmt_nsp_ncmd.size(); i++) {
+        if (std::string{".,+-<>[]"}.find(code_ncmt_nsp_ncmd[i]) != std::string::npos) {
+            valid_code << code_ncmt_nsp_ncmd[i];
+        }
+    }
+    return valid_code.str();
+}
+
+std::string replace_command(const std::string &code_ncomment_nspace) {
+    int find_start = 0;
+    std::ostringstream code_ncmt_nsp_ncmd;
+    
+    auto cmd_start = code_ncomment_nspace.find('!', find_start); // !
+    if (cmd_start == std::string::npos) return code_ncomment_nspace;
+    while (cmd_start != std::string::npos) {
+        code_ncmt_nsp_ncmd << code_ncomment_nspace.substr(find_start, cmd_start + 1 - find_start);
+        int cmd_name_end = code_ncomment_nspace.find('(', cmd_start + 1); // (
+        std::string cmd_name = code_ncomment_nspace.substr(cmd_start + 1, cmd_name_end - cmd_start - 1);
+        int cmd_end = code_ncomment_nspace.find(')', cmd_name_end + 1); // )
+        std::string cmd_body = code_ncomment_nspace.substr(cmd_name_end + 1, cmd_end - cmd_name_end - 1);
+        code_ncmt_nsp_ncmd << cmd_handler(cmd_name, cmd_body);
+        find_start = cmd_end + 1;
+        cmd_start = code_ncomment_nspace.find('!', find_start);
+    }
+    return code_ncmt_nsp_ncmd.str();
+}
+
+
+std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body) {
+    std::ostringstream code;
+    if(cmd_name ==  "include") {
+        auto real_path = std::filesystem::current_path() / cmd_body;
+        std::ifstream file{real_path};
+        code << file.rdbuf();
+        return valid_code(code.str());
+    }
+    return code.str();
 }
