@@ -90,7 +90,7 @@ uint8_t input(bool input_number) {
 int loop_left(std::vector<int> &left, uint8_t c, int i, const std::string &bf_code) {
     left.push_back(i);
     if (c == 0) {
-        i = find_right_loop(bf_code, i);
+        i = find_right_loop(bf_code, i) - 1;
     }
     return i;
 }
