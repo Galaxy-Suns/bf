@@ -10,3 +10,6 @@ add_executable(bf
     src/main.cpp
 )
 target_link_libraries(bf PRIVATE termcolor::termcolor)
+
+include(GNUInstallDirs)
+install(TARGETS bf DESTINATION ${CMAKE_INSTALL_BINDIR})
