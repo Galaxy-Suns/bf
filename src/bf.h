@@ -1,11 +1,5 @@
 #pragma once
 #include <string>
+#include "Options.h"
 
-void bf_handler(
-    std::string bf_code_origin, 
-    bool output_number, 
-    bool input_number, 
-    int visual,
-    bool enter,
-    int max_step
-);
+void bf_handler(std::string bf_code_origin, const Options &opt);

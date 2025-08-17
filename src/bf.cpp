@@ -8,6 +8,7 @@
 #include <termcolor/termcolor.hpp>
 #include <cctype>
 #include <filesystem>
+#include "Options.h"
 
 const int MEM_SIZE = 30000;
 const int MATCH_BUFFER_SIZE = 1000;
@@ -15,26 +16,20 @@ const int MATCH_BUFFER_SIZE = 1000;
 std::string valid_code(const std::string &origin); 
 std::string replace_command(const std::string &code_ncomment_nspace); 
 std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body); 
-void output(uint8_t c, bool output_number, bool enter); 
-uint8_t input(bool input_number); 
+void output(uint8_t c, const Options &opt); 
+uint8_t input(const Options &opt); 
 int loop_left(std::vector<int> &left, uint8_t c, int i, const std::string &bf_code); 
 int find_right_loop(const std::string &bf_code, int i); 
 int loop_right(std::vector<int> &left, uint8_t c, int i); 
-void visualize(const std::string &bf_code, uint8_t *mem, int visual, int vi, int index); 
+void visualize(const std::string &bf_code, uint8_t *mem, int vi, int index, const Options &opt); 
 
-void bf_handler(
-    std::string bf_code_origin, 
-    bool output_number, 
-    bool input_number, 
-    int visual,
-    bool enter,
-    int max_step
-) {
+void bf_handler(std::string bf_code_origin, const Options &opt) {
     std::string bf_code = valid_code(bf_code_origin);
     uint8_t mem[MEM_SIZE]{0};
     int index = 0;
     std::vector<int> left;
 
+    int max_step = opt.max_step;
     for(int i = 0; i < bf_code.size() && max_step != 0; i++, max_step--) {
         int vi = i;
         char c = bf_code[i];
@@ -52,10 +47,10 @@ void bf_handler(
             index++;
             break;
         case '.':
-            output(mem[index], output_number, enter);
+            output(mem[index], opt);
             break;
         case ',':
-            mem[index] = input(input_number);
+            mem[index] = input(opt);
             break;
         case '[':
             i = loop_left(left, mem[index], i, bf_code);
@@ -64,19 +59,19 @@ void bf_handler(
             i = loop_right(left, mem[index], i);
             break;
         }
-        if (visual) visualize(bf_code, mem, visual, vi, index);
+        if (opt.visual) visualize(bf_code, mem, vi, index, opt);
     }
 }
 
-void output(uint8_t c, bool output_number, bool enter) {
-    if (output_number) std::cout << (int) c << std::flush;
+void output(uint8_t c, const Options &opt) {
+    if (opt.output_number) std::cout << (int) c << std::flush;
     else std::cout << (char) c << std::flush;
-    if (enter) std::cout << std::endl;
+    if (opt.enter) std::cout << std::endl;
 }
 
-uint8_t input(bool input_number) { 
+uint8_t input(const Options &opt) { 
     std::cout << ">>> ";
-    if (input_number) {
+    if (opt.input_number) {
         int tmp;
         std::cin >> tmp;
         return tmp;
@@ -117,14 +112,14 @@ int loop_right(std::vector<int> &left, uint8_t c, int i) {
     return i;
 }
 
-void visualize(const std::string &bf_code, uint8_t *mem, int visual, int vi, int index) {
+void visualize(const std::string &bf_code, uint8_t *mem, int vi, int index, const Options &opt) {
     for (int j = 0; j < bf_code.size(); j++) {
         if (vi == j) std::cout << termcolor::green;
         std::cout << bf_code[j];
         if (vi == j) std::cout << termcolor::reset;
     }
     std::cout << std::endl;
-    for (int i = 0; i < visual; i++) {
+    for (int i = 0; i < opt.visual; i++) {
         if (index == i) std::cout << termcolor::green;
         std::cout << (int) mem[i] << '\t';
         if (index == i) std::cout << termcolor::reset;
@@ -133,7 +128,7 @@ void visualize(const std::string &bf_code, uint8_t *mem, int visual, int vi, int
     std::cout << termcolor::blue;
     std::ostringstream oss;
     bool printFlag = false;
-    for (int i = 0; i < visual; i++) {
+    for (int i = 0; i < opt.visual; i++) {
         char c = (char) mem[i];
         if(std::isprint(c)) {
             oss<< (char) mem[i] << '\t';

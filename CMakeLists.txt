@@ -8,6 +8,7 @@ find_package(termcolor CONFIG REQUIRED)
 add_executable(bf
     src/bf.cpp
     src/main.cpp
+    src/Options.cpp
 )
 target_link_libraries(bf PRIVATE termcolor::termcolor)
 
