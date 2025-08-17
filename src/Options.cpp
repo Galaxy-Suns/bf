@@ -7,7 +7,7 @@ void configure_parser(cli::Parser& parser) {
 	parser.set_optional<bool>("ON", "OUTPUT_NUMBER", false, "Use int to show output, otherwise show chars.");
 	parser.set_optional<bool>("E", "ENTER", false, "Start a new line when output.");
 	parser.set_optional<int>("V", "VISUAL", 0, "Visual mode, 0 is not enable, N means show N cells.");
-	parser.set_optional<int>("VD", "VISUAL_DEBUG", 0, "Visual debug mode, use with !v() command, 0 is not enable, N means show N cells.");
+	parser.set_optional<int>("VD", "VISUAL_DEBUG", 0, "Visual debug mode, use with !visual() command, 0 is not enable, N means show N cells.");
 	parser.set_optional<int>("MS", "MAX_STEP", -1, "Max exec steps, -1 is completely run.");
     parser.set_default<std::string>(false, "File to get input, or use -C.", "");
 }
@@ -20,7 +20,7 @@ Options get_options_from_parser(const cli::Parser& parser) {
     opt.input_number = parser.get<bool>("IN");
     opt.enter = parser.get<bool>("E");
     opt.visual = parser.get<int>("V");
-    opt.visual_debug = parser.get<int>("V");
+    opt.visual_debug = parser.get<int>("VD");
     opt.max_step = parser.get<int>("MS");
     return opt;
 }

@@ -4,7 +4,6 @@
 #include <iostream>
 #include "Options.h"
 
-
 int main(int argc, char *argv[]) {
     const Options opt = get_options(argc, argv);
 

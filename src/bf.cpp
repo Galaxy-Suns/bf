@@ -13,18 +13,18 @@
 const int MEM_SIZE = 30000;
 const int MATCH_BUFFER_SIZE = 1000;
 
-std::string valid_code(const std::string &origin); 
-std::string replace_command(const std::string &code_ncomment_nspace); 
-std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body); 
+std::string valid_code(const std::string &origin, const Options &opt); 
+std::string replace_command(const std::string &code_ncomment_nspace, const Options &opt); 
+std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body, const Options &opt); 
 void output(uint8_t c, const Options &opt); 
 uint8_t input(const Options &opt); 
 int loop_left(std::vector<int> &left, uint8_t c, int i, const std::string &bf_code); 
 int find_right_loop(const std::string &bf_code, int i); 
 int loop_right(std::vector<int> &left, uint8_t c, int i); 
-void visualize(const std::string &bf_code, uint8_t *mem, int vi, int index, const Options &opt); 
+void visualize(const std::string &bf_code, uint8_t *mem, int &vi, int index, int cells_num, const Options& opt); 
 
 void bf_handler(std::string bf_code_origin, const Options &opt) {
-    std::string bf_code = valid_code(bf_code_origin);
+    std::string bf_code = valid_code(bf_code_origin, opt);
     uint8_t mem[MEM_SIZE]{0};
     int index = 0;
     std::vector<int> left;
@@ -58,8 +58,11 @@ void bf_handler(std::string bf_code_origin, const Options &opt) {
         case ']':
             i = loop_right(left, mem[index], i);
             break;
+        case 'v':
+            visualize(bf_code, mem, vi, index, opt.visual_debug, opt);
+            break;
         }
-        if (opt.visual) visualize(bf_code, mem, vi, index, opt);
+        if (opt.visual) visualize(bf_code, mem, vi, index, opt.visual, opt);
     }
 }
 
@@ -112,14 +115,20 @@ int loop_right(std::vector<int> &left, uint8_t c, int i) {
     return i;
 }
 
-void visualize(const std::string &bf_code, uint8_t *mem, int vi, int index, const Options &opt) {
+void visualize(const std::string &bf_code, uint8_t *mem, int &vi, int index, int cells_num, const Options &opt) {
     for (int j = 0; j < bf_code.size(); j++) {
-        if (vi == j) std::cout << termcolor::green;
+        if (bf_code[j] == 'v') std::cout << termcolor::red;
+        if (vi == j) {
+            if (bf_code[j] != 'v') std::cout << termcolor::green;
+            else {
+                std::cout << termcolor::yellow;
+            }
+        }
         std::cout << bf_code[j];
-        if (vi == j) std::cout << termcolor::reset;
+        std::cout << termcolor::reset;
     }
     std::cout << std::endl;
-    for (int i = 0; i < opt.visual; i++) {
+    for (int i = 0; i < cells_num; i++) {
         if (index == i) std::cout << termcolor::green;
         std::cout << (int) mem[i] << '\t';
         if (index == i) std::cout << termcolor::reset;
@@ -128,7 +137,7 @@ void visualize(const std::string &bf_code, uint8_t *mem, int vi, int index, cons
     std::cout << termcolor::blue;
     std::ostringstream oss;
     bool printFlag = false;
-    for (int i = 0; i < opt.visual; i++) {
+    for (int i = 0; i < cells_num; i++) {
         char c = (char) mem[i];
         if(std::isprint(c)) {
             oss<< (char) mem[i] << '\t';
@@ -141,7 +150,7 @@ void visualize(const std::string &bf_code, uint8_t *mem, int vi, int index, cons
     std::cout << "----" << std::endl;
 }
 
-std::string valid_code(const std::string &origin) {
+std::string valid_code(const std::string &origin, const Options &opt) {
     std::istringstream iss{origin};
     std::ostringstream code_ncomment_nspace, valid_code;
     std::string line;
@@ -151,16 +160,16 @@ std::string valid_code(const std::string &origin) {
             if (!std::isspace(line[i])) code_ncomment_nspace << line[i];
         }
     }
-    std::string code_ncmt_nsp_ncmd = replace_command(code_ncomment_nspace.str());
+    std::string code_ncmt_nsp_ncmd = replace_command(code_ncomment_nspace.str(), opt);
     for (int i = 0; i < code_ncmt_nsp_ncmd.size(); i++) {
-        if (std::string{".,+-<>[]"}.find(code_ncmt_nsp_ncmd[i]) != std::string::npos) {
+        if (std::string{".,+-<>[]v"}.find(code_ncmt_nsp_ncmd[i]) != std::string::npos) {
             valid_code << code_ncmt_nsp_ncmd[i];
         }
     }
     return valid_code.str();
 }
 
-std::string replace_command(const std::string &code_ncomment_nspace) {
+std::string replace_command(const std::string &code_ncomment_nspace, const Options &opt) {
     int find_start = 0;
     std::ostringstream code_ncmt_nsp_ncmd;
     
@@ -172,7 +181,7 @@ std::string replace_command(const std::string &code_ncomment_nspace) {
         std::string cmd_name = code_ncomment_nspace.substr(cmd_start + 1, cmd_name_end - cmd_start - 1);
         int cmd_end = code_ncomment_nspace.find(')', cmd_name_end + 1); // )
         std::string cmd_body = code_ncomment_nspace.substr(cmd_name_end + 1, cmd_end - cmd_name_end - 1);
-        code_ncmt_nsp_ncmd << cmd_handler(cmd_name, cmd_body);
+        code_ncmt_nsp_ncmd << cmd_handler(cmd_name, cmd_body, opt);
         find_start = cmd_end + 1;
         cmd_start = code_ncomment_nspace.find('!', find_start);
     }
@@ -180,14 +189,16 @@ std::string replace_command(const std::string &code_ncomment_nspace) {
     return code_ncmt_nsp_ncmd.str();
 }
 
-
-std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body) {
+std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body, const Options &opt) {
     std::ostringstream code;
     if(cmd_name ==  "include") {
         auto real_path = std::filesystem::current_path() / cmd_body;
         std::ifstream file{real_path};
         code << file.rdbuf();
-        return valid_code(code.str());
+        return valid_code(code.str(), opt);
+    }
+    if (cmd_name == "visual" && opt.visual_debug) {
+        return "v";
     }
     return code.str();
 }
