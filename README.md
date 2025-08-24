@@ -32,7 +32,11 @@ Available parameters:
    This parameter is optional. The default value is '0'.
 
   -V	--VISUAL
-   Visual mode.
+   Visual mode, 0 is not enable, N means show N cells.
+   This parameter is optional. The default value is '0'.
+
+  -VD	--VISUAL_DEBUG
+   Visual debug mode, use with !visual() command, 0 is not enable, N means show N cells.
    This parameter is optional. The default value is '0'.
 
   -MS	--MAX_STEP
@@ -54,6 +58,8 @@ $ ./build/bf example/mul.bf -ON -IN -E
 72
 9
 8
+$ ./build/bf example/utf8.bf 
+你好 世界🤖
 ```
 
 ## 扩展
@@ -76,3 +82,4 @@ $ ./build/bf example/mul.bf -ON -IN -E
 - 以`!`开头的非注释内容被视为预处理指令 格式为 `! CMDNAME ( ... ) `
   - `!include(/path/to/your/function.bf)` 用目标中的代码替换此处 可以实现类似函数的功能
     - 相对于 解释器的工作目录
+  - `!visual()` 配合命令行参数`-VD`使用 可视化当前代码位置的内存和指针状态

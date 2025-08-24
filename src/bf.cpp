@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdint>
 #include <termcolor/termcolor.hpp>
+#include "UTF8.h"
 #include <cctype>
 #include <filesystem>
 #include "Options.h"
@@ -16,8 +17,8 @@ const int MATCH_BUFFER_SIZE = 1000;
 std::string valid_code(const std::string &origin, const Options &opt); 
 std::string replace_command(const std::string &code_ncomment_nspace, const Options &opt); 
 std::string cmd_handler(const std::string &cmd_name, const std::string &cmd_body, const Options &opt); 
-void output(uint8_t c, const Options &opt); 
-uint8_t input(const Options &opt); 
+void output(const uint8_t mem[], const Options &opt); 
+void input(uint8_t mem[], const Options &opt); 
 int loop_left(std::vector<int> &left, uint8_t c, int i, const std::string &bf_code); 
 int find_right_loop(const std::string &bf_code, int i); 
 int loop_right(std::vector<int> &left, uint8_t c, int i); 
@@ -47,10 +48,10 @@ void bf_handler(std::string bf_code_origin, const Options &opt) {
             index++;
             break;
         case '.':
-            output(mem[index], opt);
+            output(&mem[index], opt);
             break;
         case ',':
-            mem[index] = input(opt);
+            input(&mem[index], opt);
             break;
         case '[':
             i = loop_left(left, mem[index], i, bf_code);
@@ -66,22 +67,25 @@ void bf_handler(std::string bf_code_origin, const Options &opt) {
     }
 }
 
-void output(uint8_t c, const Options &opt) {
-    if (opt.output_number) std::cout << (int) c << std::flush;
-    else std::cout << (char) c << std::flush;
+void output(const uint8_t mem[], const Options &opt) {
+    if (opt.output_number) std::cout << (int) mem[0] << std::flush;
+    else {
+        std::string s = buffer_to_string(mem);
+        std::cout << s << std::flush;
+    }
     if (opt.enter) std::cout << std::endl;
 }
 
-uint8_t input(const Options &opt) { 
+void input(uint8_t mem[], const Options &opt) { 
     std::cout << ">>> ";
     if (opt.input_number) {
         int tmp;
         std::cin >> tmp;
-        return tmp;
+        mem[0] = tmp;
     } else {
-        char tmp;
+        std::string tmp;
         std::cin >> tmp;
-        return tmp;
+        string_to_buffer(tmp, mem);
     }
 }
 
