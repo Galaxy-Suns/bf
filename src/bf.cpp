@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
-#include <termcolor/termcolor.hpp>
+#include "termcolor.hpp"
 #include "UTF8.h"
 #include <cctype>
 #include <filesystem>

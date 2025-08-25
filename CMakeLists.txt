@@ -4,14 +4,12 @@ project(bf
     LANGUAGES CXX
 )
 
-find_package(termcolor CONFIG REQUIRED)
 add_executable(bf
     src/bf.cpp
     src/main.cpp
     src/Options.cpp
     src/UTF8.cpp
 )
-target_link_libraries(bf PRIVATE termcolor::termcolor)
 target_include_directories(bf PRIVATE external)
 
 include(GNUInstallDirs)

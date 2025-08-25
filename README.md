@@ -2,10 +2,6 @@
 
 A [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) Interpreter.
 
-## Dependencies
-
-- [termcolor](https://github.com/ikalnytskyi/termcolor)
-
 ## Usage
 
 ```
@@ -52,12 +48,6 @@ Available parameters:
 
 
 ```sh
-$ ./build/bf example/mul.bf -ON -IN -E
->>> 9
->>> 8
-72
-9
-8
 $ ./build/bf example/utf8.bf 
 你好 世界🤖
 ```
