@@ -9,6 +9,7 @@ add_executable(bf
     src/main.cpp
     src/Options.cpp
     src/UTF8.cpp
+    src/Help.cpp
 )
 target_include_directories(bf PRIVATE external)
 

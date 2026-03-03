@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Help.h"
 
 struct Options {
     std::string command;
@@ -10,6 +11,8 @@ struct Options {
     int visual_debug;
     int max_step;
     std::string file;
+    bool help_enable;
+    bool show_version;
 };
 
-Options get_options(int argc, char *argv[]); 
+Options get_options(int argc, char *argv[], Help &help); 
