@@ -1,8 +1,6 @@
 # bf
 
-A [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) Interpreter.
-
-"An enhanced [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) interpreter with extended UTF-8 encoding support and additional pre-processing directives."
+An enhanced [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) interpreter with extended UTF-8 encoding support and additional pre-processing directives.
 
 ## Usage
 
